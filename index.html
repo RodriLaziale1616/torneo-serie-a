@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="styles.css">
+
+  <title>Serie A - Club Área 1</title>
+  <style>
+    body { font-family: 'Montserrat', sans-serif; padding: 80px; }
+    h1, h2 { margin-top: 30px; background: #ADD8E688; color: blue; text-align: center; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background: #ADD8E680; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #ffffff; }
+    input { width: 40px; text-align: center; }
+    input:disabled { background-color: #eee; }
+    .fixture-row { background: #ADD8E680; padding: 10px; margin: 5px 0; }
+    .fixture-container { margin-top: 10px; display: flex; gap: 20px; }
+    .fixture-container > div { flex: 1; }
+  </style>
+</head>
+<body>
+
+<h1>Serie A – Club Área 1</h1>
+<h2>Fixture</h2>
+<div id="fixture" class="fixture-container">
+  <div id="fixture-ida"></div>
+  <div id="fixture-vuelta"></div>
+</div>
+
+<h2>Tabla de posiciones</h2>
+<table id="standings">
+  <thead>
+    <tr>
+      <th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th>
+      <th>GF</th><th>GC</th><th>DF</th><th>PTS</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>Tabla de goleadores</h2>
+<table id="goleadores">
+  <thead>
+    <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Goles</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const equipos = ["Lazio","Napoli","Roma","Udinese","Inter","Milan","Juventus","Sassuolo","Fiorentina"];
+let fixture = [], goleadores = [];
+
+function actualizarTabla() {
+  const tabla = {};
+  equipos.forEach(e => tabla[e] = { PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, PTS:0 });
+  fixture.forEach(p => {
+    const [j, local, visita, gl, gv] = p;
+    if (gl == null || gv == null) return;
+    tabla[local].PJ++; tabla[visita].PJ++;
+    tabla[local].GF += gl; tabla[local].GC += gv;
+    tabla[visita].GF += gv; tabla[visita].GC += gl;
+    if (gl > gv) { tabla[local].PG++; tabla[visita].PP++; tabla[local].PTS += 3; }
+    else if (gl < gv) { tabla[visita].PG++; tabla[local].PP++; tabla[visita].PTS += 3; }
+    else { tabla[local].PE++; tabla[visita].PE++; tabla[local].PTS += 1; tabla[visita].PTS += 1; }
+  });
+
+  const cuerpo = document.querySelector("#standings tbody");
+  cuerpo.innerHTML = "";
+  Object.entries(tabla)
+    .map(([equipo, d]) => ({equipo, ...d, DF: d.GF - d.GC}))
+    .sort((a,b)=>b.PTS-a.PTS||b.DF-a.DF||b.GF-a.GF)
+    .forEach((e,i)=>{
+      cuerpo.innerHTML += `<tr><td>${i+1}</td><td>${e.equipo}</td><td>${e.PJ}</td><td>${e.PG}</td><td>${e.PE}</td>
+        <td>${e.PP}</td><td>${e.GF}</td><td>${e.GC}</td><td>${e.DF}</td><td>${e.PTS}</td></tr>`;
+    });
+}
+
+function mostrarFixture() {
+  const ida = document.getElementById("fixture-ida");
+  const vuelta = document.getElementById("fixture-vuelta");
+  fixture.forEach((p, i) => {
+    const [j, local, visita, gl, gv] = p;
+    const div = document.createElement("div");
+    div.className = "fixture-row";
+    div.innerHTML = `J${j} — ${local} <input type="number" value="${gl ?? ""}" disabled> 
+      - <input type="number" value="${gv ?? ""}" disabled> ${visita}`;
+    (j <= 19 ? ida : vuelta).appendChild(div);
+  });
+}
+
+function mostrarGoleadores() {
+  const cuerpo = document.querySelector("#goleadores tbody");
+  cuerpo.innerHTML = "";
+  goleadores.sort((a,b)=>b.goles - a.goles).forEach((g,i)=>{
+    cuerpo.innerHTML += `<tr><td>${i+1}</td><td>${g.nombre}</td><td>${g.equipo}</td><td>${g.goles}</td></tr>`;
+  });
+}
+
+fetch("datos.json")
+  .then(res => res.json())
+  .then(data => {
+    fixture = data.fixture;
+    goleadores = data.goleadores;
+    mostrarFixture();
+    actualizarTabla();
+    mostrarGoleadores();
+  })
+  .catch(err => alert("No se pudo cargar datos.json"));
+</script>
+</body>
+</html>
