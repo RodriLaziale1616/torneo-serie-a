@@ -4,21 +4,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css">
 
   <title>Serie A - Club Área 1</title>
+  
   <style>
-    body { font-family: 'Montserrat', sans-serif; padding: 80px; }
-    h1, h2 { margin-top: 30px; background: #ADD8E688; color: blue; text-align: center; }
-    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background: #ADD8E680; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #ffffff; }
-    input { width: 40px; text-align: center; }
-    input:disabled { background-color: #eee; }
-    .fixture-row { background: #ADD8E680; padding: 10px; margin: 5px 0; }
-    .fixture-container { margin-top: 10px; display: flex; gap: 20px; }
-    .fixture-container > div { flex: 1; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f4f8;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #003366;
+      margin: 20px 0 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      text-align: center;
+    }
+    th {
+      background-color: #e6f2ff;
+    }
+    input[type="number"] {
+      width: 40px;
+      text-align: center;
+    }
+    .fixture-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .fixture-col {
+      flex: 1 1 300px;
+      max-width: 100%;
+    }
+    .fixture-row {
+      background: #e6f2ff;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    @media screen and (max-width: 768px) {
+      h1 {
+        font-size: 22px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      th, td {
+        font-size: 12px;
+        padding: 8px;
+      }
+      .fixture-row {
+        font-size: 14px;
+      }
+    }
   </style>
+
 </head>
 <body>
 
