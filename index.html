@@ -78,11 +78,34 @@
 <body>
 
 <h1>Serie A – Club Área 1</h1>
-<img src="https://visitor-badge.laobi.icu/badge?page_id=https://rodrilaziale1616.github.io/torneo-serie-a" alt="contador de visitas"/><h2>Fixture</h2>
-<div id="fixture" class="fixture-container">
-  <div id="fixture-ida"></div>
-  <div id="fixture-vuelta"></div>
-</div>
+<img src="https://visitor-badge.laobi.icu/badge?page_id=https://rodrilaziale1616.github.io/torneo-serie-a" alt="contador de visitas"/>
+
+<h2>Partidos Jugados</h2>
+<table id="partidos-jugados">
+  <thead>
+    <tr>
+      <th>Jornada</th>
+      <th>Local</th>
+      <th>Goles Local</th>
+      <th>Goles Visitante</th>
+      <th>Visitante</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>Siguiente Fecha</h2>
+<table id="proxima-fecha">
+  <thead>
+    <tr>
+      <th>Jornada</th>
+      <th>Fecha</th>
+      <th>Local</th>
+      <th>Visitante</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 <h2>Tabla de posiciones</h2>
 <table id="standings">
@@ -120,7 +143,6 @@ function actualizarTabla() {
     else if (gl < gv) { tabla[visita].PG++; tabla[local].PP++; tabla[visita].PTS += 3; }
     else { tabla[local].PE++; tabla[visita].PE++; tabla[local].PTS += 1; tabla[visita].PTS += 1; }
   });
-
   const cuerpo = document.querySelector("#standings tbody");
   cuerpo.innerHTML = "";
   Object.entries(tabla)
@@ -132,17 +154,14 @@ function actualizarTabla() {
     });
 }
 
-function mostrarFixture() {
-  const ida = document.getElementById("fixture-ida");
-  const vuelta = document.getElementById("fixture-vuelta");
-  fixture.forEach((p, i) => {
-    const [j, local, visita, gl, gv] = p;
-    const div = document.createElement("div");
-    div.className = "fixture-row";
-    div.innerHTML = `J${j} — ${local} <input type="number" value="${gl ?? ""}" disabled> 
-      - <input type="number" value="${gv ?? ""}" disabled> ${visita}`;
-    (j <= 19 ? ida : vuelta).appendChild(div);
-  });
+function mostrarPartidosJugados() {
+  const cuerpo = document.querySelector("#partidos-jugados tbody");
+  cuerpo.innerHTML = "";
+  fixture.filter(p => p[3] != null && p[4] != null)
+    .forEach(p => {
+      const [j, local, visita, gl, gv] = p;
+      cuerpo.innerHTML += `<tr><td>${j}</td><td>${local}</td><td>${gl}</td><td>${gv}</td><td>${visita}</td></tr>`;
+    });
 }
 
 function mostrarGoleadores() {
@@ -156,13 +175,24 @@ function mostrarGoleadores() {
 fetch("datos.json")
   .then(res => res.json())
   .then(data => {
-    fixture = data.fixture;
-    goleadores = data.goleadores;
-    mostrarFixture();
+    fixture = data.fixture || [];
+    goleadores = data.goleadores || [];
     actualizarTabla();
+    mostrarPartidosJugados();
     mostrarGoleadores();
+
+    if(data.proximaFecha){
+      const cuerpo = document.querySelector("#proxima-fecha tbody");
+      cuerpo.innerHTML = "";
+      data.proximaFecha.forEach(p=>{
+        cuerpo.innerHTML += `<tr>
+          <td>${p.jornada}</td><td>${p.fecha}</td><td>${p.local}</td><td>${p.visitante}</td>
+        </tr>`;
+      });
+    }
   })
   .catch(err => alert("No se pudo cargar datos.json"));
 </script>
 </body>
 </html>
+
