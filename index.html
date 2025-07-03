@@ -83,9 +83,6 @@
 <h2>Partidos Jugados</h2>
 <table id="partidos-jugados">
   <thead>
-    <tr>
-      <th>Jornada</th>
-    </tr>
   </thead>
   <tbody></tbody>
 </table>
@@ -165,7 +162,7 @@ function mostrarPartidosJugados() {
 
   // recorrer jornadas ordenadas
   Object.keys(partidosPorJornada).sort((a,b)=>a-b).forEach(jornada => {
-    cuerpo.innerHTML += `<tr style="background:#e6f2ff"><td colspan="5">Jornada ${jornada}</td></tr>`;
+    cuerpo.innerHTML += `<tr style="background:#e6f2ff"><td colspan="5"><b>Jornada ${jornada}</b></td></tr>`;
     partidosPorJornada[jornada].forEach(p=>{
       cuerpo.innerHTML += `<tr>
         <td></td>
