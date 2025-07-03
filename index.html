@@ -153,12 +153,31 @@ function actualizarTabla() {
 function mostrarPartidosJugados() {
   const cuerpo = document.querySelector("#partidos-jugados tbody");
   cuerpo.innerHTML = "";
+
+  // agrupar por jornada
+  const partidosPorJornada = {};
   fixture.filter(p => p[3] != null && p[4] != null)
     .forEach(p => {
       const [j, local, visita, gl, gv] = p;
-      cuerpo.innerHTML += `<tr><td>${j}</td><td>${local}</td><td>${gl}</td><td>${gv}</td><td>${visita}</td></tr>`;
+      if (!partidosPorJornada[j]) partidosPorJornada[j] = [];
+      partidosPorJornada[j].push(p);
     });
+
+  // recorrer jornadas ordenadas
+  Object.keys(partidosPorJornada).sort((a,b)=>a-b).forEach(jornada => {
+    cuerpo.innerHTML += `<tr style="background:#e6f2ff"><td colspan="5">Jornada ${jornada}</td></tr>`;
+    partidosPorJornada[jornada].forEach(p=>{
+      cuerpo.innerHTML += `<tr>
+        <td></td>
+        <td>${p[1]}</td>
+        <td>${p[3]}</td>
+        <td>${p[4]}</td>
+        <td>${p[2]}</td>
+      </tr>`;
+    });
+  });
 }
+
 
 function mostrarGoleadores() {
   const cuerpo = document.querySelector("#goleadores tbody");
