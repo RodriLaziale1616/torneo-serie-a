@@ -41,4 +41,201 @@
       <h3 style="text-align:center;margin:8px 0 12px">Grupo A</h3>
       <table id="tablaA">
         <thead>
-          <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</
+          <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DF</th><th>PTS</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <details>
+        <summary>Ver partidos del Grupo A</summary>
+        <div id="fixtureA"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3 style="text-align:center;margin:8px 0 12px">Grupo B</h3>
+      <table id="tablaB">
+        <thead>
+          <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DF</th><th>PTS</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <details>
+        <summary>Ver partidos del Grupo B</summary>
+        <div id="fixtureB"></div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ GOLEADORES ============ -->
+  <div class="card" style="margin-top:18px">
+    <h2 style="margin-top:0">Tabla de goleadores</h2>
+    <table id="goleadores">
+      <thead>
+        <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Goles</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="subtle" style="text-align:center">Datos de lectura (alimentados por <code>datos.json</code>).</p>
+  </div>
+
+  <!-- ============ FASE REGULAR (solo lectura, oculta por botón) ============ -->
+  <div id="regular" class="fixture-container">
+    <h2 style="margin-top:20px">Fase Regular</h2>
+
+    <div class="fixture-cols">
+      <div class="fixture-col" id="fixture-ida"></div>
+      <div class="fixture-col" id="fixture-vuelta"></div>
+    </div>
+
+    <h2>Próxima Fecha</h2>
+    <table id="tabla-proxima">
+      <thead>
+        <tr><th>Jornada</th><th>Fecha</th><th>Local</th><th>Visitante</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>Tabla de posiciones (Fase Regular)</h2>
+    <table id="standings">
+      <thead>
+        <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DF</th><th>PTS</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const grupoA = ["Milan","Lazio","Napoli","Fiorentina"];
+const grupoB = ["Sassuolo","Inter","Udinese","Roma"];
+const equipos = ["Lazio","Napoli","Roma","Udinese","Inter","Milan","Juventus","Sassuolo","Fiorentina"];
+
+const regularEl = document.getElementById("regular");
+document.getElementById("btnToggleRegular").addEventListener("click", ()=>{
+  regularEl.style.display = (regularEl.style.display==="block") ? "none" : "block";
+});
+
+function tablaDesdePartidos(jornadas, equiposGrupo){
+  const t = {}; equiposGrupo.forEach(e=>t[e]={PJ:0,PG:0,PE:0,PP:0,GF:0,GC:0,PTS:0});
+  jornadas.flat().forEach(p=>{
+    if(p.gl==null || p.gv==null) return;
+    t[p.local].PJ++; t[p.visita].PJ++;
+    t[p.local].GF+=p.gl; t[p.local].GC+=p.gv;
+    t[p.visita].GF+=p.gv; t[p.visita].GC+=p.gl;
+    if(p.gl>p.gv){ t[p.local].PG++; t[p.visita].PP++; t[p.local].PTS+=3; }
+    else if(p.gl<p.gv){ t[p.visita].PG++; t[p.local].PP++; t[p.visita].PTS+=3; }
+    else { t[p.local].PE++; t[p.visita].PE++; t[p.local].PTS++; t[p.visita].PTS++; }
+  });
+  return Object.entries(t).map(([equipo,d])=>({equipo,...d,DF:d.GF-d.GC}))
+           .sort((a,b)=>b.PTS-a.PTS||b.DF-a.DF||b.GF-a.GF);
+}
+
+function pintarTablaLiguilla(idTabla, jornadas, equiposGrupo){
+  const tb = document.querySelector(`#${idTabla} tbody`);
+  tb.innerHTML = "";
+  tablaDesdePartidos(jornadas, equiposGrupo).forEach((e,i)=>{
+    tb.innerHTML += `<tr>
+      <td>${i+1}</td><td>${e.equipo}</td>
+      <td>${e.PJ}</td><td>${e.PG}</td><td>${e.PE}</td><td>${e.PP}</td>
+      <td>${e.GF}</td><td>${e.GC}</td><td>${e.DF}</td><td>${e.PTS}</td></tr>`;
+  });
+}
+
+function pintarFixtureGrupo(containerId, jornadas){
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = "";
+  jornadas.forEach((partidos,idxJ)=>{
+    const box = document.createElement("div");
+    box.className = "card";
+    box.style.marginBottom = "10px";
+    box.innerHTML = `<div class="subtle" style="font-weight:600">Jornada ${idxJ+1}</div>`;
+    partidos.forEach(p=>{
+      const row = document.createElement("div");
+      row.className = "fixture-row";
+      const marcador = (p.gl==null||p.gv==null) ? " - " : `${p.gl} - ${p.gv}`;
+      row.innerText = `${p.local} ${marcador} ${p.visita}`;
+      box.appendChild(row);
+    });
+    cont.appendChild(box);
+  });
+}
+
+function actualizarTablaRegular(fixture){
+  const tabla = {};
+  equipos.forEach(e=>tabla[e]={PJ:0,PG:0,PE:0,PP:0,GF:0,GC:0,PTS:0});
+  fixture.forEach(p=>{
+    const [j,local,visita,gl,gv]=p;
+    if(gl==null || gv==null) return;
+    tabla[local].PJ++; tabla[visita].PJ++;
+    tabla[local].GF+=gl; tabla[local].GC+=gv;
+    tabla[visita].GF+=gv; tabla[visita].GC+=gl;
+    if(gl>gv){tabla[local].PG++; tabla[visita].PP++; tabla[local].PTS+=3;}
+    else if(gl<gv){tabla[visita].PG++; tabla[local].PP++; tabla[visita].PTS+=3;}
+    else {tabla[local].PE++; tabla[visita].PE++; tabla[local].PTS++; tabla[visita].PTS++;}
+  });
+  const cuerpo=document.querySelector("#standings tbody");
+  cuerpo.innerHTML="";
+  Object.entries(tabla).map(([equipo,d])=>({equipo,...d,DF:d.GF-d.GC}))
+  .sort((a,b)=>b.PTS-a.PTS||b.DF-a.DF||b.GF-a.GF)
+  .forEach((e,i)=>{
+    cuerpo.innerHTML += `<tr><td>${i+1}</td><td>${e.equipo}</td><td>${e.PJ}</td><td>${e.PG}</td><td>${e.PE}</td>
+    <td>${e.PP}</td><td>${e.GF}</td><td>${e.GC}</td><td>${e.DF}</td><td>${e.PTS}</td></tr>`;
+  });
+}
+
+function mostrarFixtureRegular(fixture){
+  const ida=document.getElementById("fixture-ida");
+  const vuelta=document.getElementById("fixture-vuelta");
+  ida.innerHTML=""; vuelta.innerHTML="";
+  fixture.forEach(p=>{
+    const [j,local,visita,gl,gv]=p;
+    const div=document.createElement("div");
+    div.className="fixture-row";
+    const marcador = (gl==null||gv==null) ? " - " : `${gl} - ${gv}`;
+    div.innerText = `J${j} — ${local} ${marcador} ${visita}`;
+    (j<=19?ida:vuelta).appendChild(div);
+  });
+}
+
+function pintarGoleadores(goleadores){
+  const tb=document.querySelector("#goleadores tbody");
+  tb.innerHTML="";
+  goleadores.sort((a,b)=>b.goles-a.goles).forEach((g,i)=>{
+    tb.innerHTML += `<tr><td>${i+1}</td><td>${g.nombre}</td><td>${g.equipo}</td><td>${g.goles}</td></tr>`;
+  });
+}
+
+function pintarProxima(proxima){
+  const tb=document.querySelector("#tabla-proxima tbody");
+  tb.innerHTML="";
+  proxima.forEach(p=>{
+    tb.innerHTML += `<tr><td>${p.jornada}</td><td>${p.fecha}</td><td>${p.local}</td><td>${p.visitante}</td></tr>`;
+  });
+}
+
+// ===== CARGA DE datos.json =====
+(async function init(){
+  try{
+    // Para evitar caché agresiva de GitHub Pages, podés añadir ?v=<timestamp> si lo necesitás
+    const res = await fetch('datos.json');
+    const data = await res.json(); // { fixture, proximaFecha, goleadores, liguilla }
+    // Liguilla
+    pintarTablaLiguilla("tablaA", data.liguilla.A, grupoA);
+    pintarTablaLiguilla("tablaB", data.liguilla.B, grupoB);
+    pintarFixtureGrupo("fixtureA", data.liguilla.A);
+    pintarFixtureGrupo("fixtureB", data.liguilla.B);
+    // Goleadores
+    pintarGoleadores(data.goleadores||[]);
+    // Fase Regular (queda oculta hasta que el usuario la despliegue)
+    mostrarFixtureRegular(data.fixture||[]);
+    actualizarTablaRegular(data.fixture||[]);
+    pintarProxima(data.proximaFecha||[]);
+  }catch(e){
+    console.error(e);
+    document.body.insertAdjacentHTML("beforeend",
+      '<p style="text-align:center;color:#b00020">No se pudo cargar datos.json</p>');
+  }
+})();
+</script>
+</body>
+</html>
